@@ -14,6 +14,9 @@ server.use(cors());
 
 //Base url
 server.get("/", (req, res) => {
-  res.send("<h1> Server starts here</h1> <h2> Navigate to</h2> <h3>/api</h3>");
+  res.json("Server starts here, Navigate to /api");
+});
+server.get("/api", (req, res) => {
+  res.json("Navigate to /auth");
 });
 module.exports = server;
