@@ -8,7 +8,6 @@ exports.up = function (knex) {
       tbl.text("surname", 128).notNullable();
       tbl.text("country", 128).notNullable();
     })
-
     .createTable("volunteer", (tbl) => {
       tbl.increments();
       tbl.text("username", 128).unique().notNullable();
@@ -16,16 +15,12 @@ exports.up = function (knex) {
       tbl.text("forename", 128).notNullable();
       tbl.text("surname", 128).notNullable();
       tbl.text("country", 128).notNullable();
-      tbl
-        .integer("adminId", 128)
-        .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("administrator")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      tbl.integer("adminId", 128).unsigned().notNullable();
+      //   .references("id")
+      //   .inTable("administrator")
+      //   .onUpdate("CASCADE")
+      //   .onDelete("CASCADE");
     })
-
     .createTable("student", (tbl) => {
       tbl.increments();
       tbl.text("username", 128).unique().notNullable();
@@ -33,16 +28,12 @@ exports.up = function (knex) {
       tbl.text("forename", 128).notNullable();
       tbl.text("surname", 128).notNullable();
       tbl.text("country", 128).notNullable();
-      tbl
-        .integer("volunteerId", 128)
-        .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("volunteer")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      tbl.integer("volunteerId", 128).unsigned().notNullable();
+      // .references("id")
+      // .inTable("volunteer")
+      // .onUpdate("CASCADE")
+      // .onDelete("CASCADE");
     })
-
     .createTable("lists", (tbl) => {
       tbl.increments();
       tbl.text("toDoListName", 128).notNullable();
@@ -57,7 +48,6 @@ exports.up = function (knex) {
       // .onUpdate("CASCADE")
       // .onDelete("CASCADE");
     })
-
     .createTable("items", (tbl) => {
       tbl.increments();
       tbl.integer("listId", 128).unsigned().notNullable();
@@ -74,8 +64,8 @@ exports.up = function (knex) {
 exports.down = function (knex) {
   return knex.schema
     .dropTableIfExists("administrator")
-    .dropTableIfExists("student")
     .dropTableIfExists("volunteer")
+    .dropTableIfExists("student")
     .dropTableIfExists("lists")
-    .dropTableIfExists("assigned");
+    .dropTableIfExists("items");
 };
