@@ -1,16 +1,17 @@
 const express = require("express");
 const cors = require("cors");
-const secret = require("../config/secret");
-const restricted = require("../auth/restricted-middleware");
+// const restricted = require("../auth/restricted-middleware");
 
 const server = express();
 
 //Router
+const routes = require("../admin/adminRouter");
 
 server.use(express.json());
 server.use(cors());
 
 //Endpoints
+server.use("/api/admin", routes);
 
 //Base url
 server.get("/", (req, res) => {
