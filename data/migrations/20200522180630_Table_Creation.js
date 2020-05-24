@@ -46,34 +46,25 @@ exports.up = function (knex) {
     .createTable("lists", (tbl) => {
       tbl.increments();
       tbl.text("toDoListName", 128).notNullable();
-      tbl
-        .integer("adminId", 128)
-        .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("administrator")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
-      tbl
-        .integer("volunteerId", 128)
-        .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("volunteer")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      tbl.integer("adminId", 128).unsigned().notNullable();
+      // .references("id")
+      // .inTable("administrator")
+      // .onUpdate("CASCADE")
+      // .onDelete("CASCADE");
+      tbl.integer("volunteerId", 128).unsigned().notNullable();
+      // .references("id")
+      // .inTable("volunteer")
+      // .onUpdate("CASCADE")
+      // .onDelete("CASCADE");
     })
 
     .createTable("items", (tbl) => {
       tbl.increments();
-      tbl
-        .integer("listId", 128)
-        .unsigned()
-        .notNullable()
-        .references("id")
-        .inTable("lists")
-        .onUpdate("CASCADE")
-        .onDelete("CASCADE");
+      tbl.integer("listId", 128).unsigned().notNullable();
+      // .references("id")
+      // .inTable("lists")
+      // .onUpdate("CASCADE")
+      // .onDelete("CASCADE");
       tbl.integer("itemId", 128).unsigned().notNullable();
       tbl.text("item", 128).notNullable();
       tbl.boolean("completed", 128).notNullable().defaultTo("false");
