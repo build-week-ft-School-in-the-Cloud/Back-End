@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const secret = require("../config/secret");
 const restricted = require("../auth/restricted-middleware");
 
-const model = require("./adminModel");
+const model = require("./studentModel");
 
 const router = express.Router();
 
@@ -33,7 +33,8 @@ router.post("/register", (req, res) => {
           body.surname &&
           typeof body.surname === "string" &&
           body.country &&
-          typeof body.country === "string"
+          typeof body.country === "string" &&
+          body.volunteerId
         ) {
           const rounds = process.env.BCRYPT_ROUNDS || 12;
           const hash = bcrypt.hashSync(body.password, rounds);
@@ -41,14 +42,14 @@ router.post("/register", (req, res) => {
 
           model
             .register(body)
-            .then((newAdmin) => {
-              console.log("new Admin", newAdmin);
-              res.status(201).json(newAdmin);
+            .then((newStudent) => {
+              console.log("new Student", newStudent);
+              res.status(201).json(newStudent);
             })
             .catch((err) => {
-              console.log("new admin error", err);
+              console.log("new student error", err);
               res.status(500).json({
-                message: "server error hiring new administrator",
+                message: "server error hiring new student",
                 error: err,
               });
             });
@@ -88,6 +89,11 @@ router.post("/register", (req, res) => {
           res.status(400).json({
             message: "Country must be alphanumeric",
           });
+        } else if (!body.volunteerId) {
+          console.log("no volunteer", body);
+          res.status(400).json({
+            message: "Please add your assigned teacher's id number",
+          });
         }
       } else {
         console.log("username taken");
@@ -110,15 +116,15 @@ router.post("/login", (req, res) => {
 
   if (username) {
     model
-      //locates username stored in admin database
+      //locates username stored in student database
       .findByUsername(username)
-      .then(([employee]) => {
+      .then(([student]) => {
         //compares given password to stored hashed password
-        if (employee && bcrypt.compareSync(password, employee.password)) {
-          const token = generateToken(employee);
+        if (student && bcrypt.compareSync(password, student.password)) {
+          const token = generateToken(student);
 
           res.status(200).json({
-            message: `Welcome, ${employee.username}! Login Successful! Navigate to /users or /profile`,
+            message: `Welcome, ${student.username}! Login Successful! Navigate to /users or /profile`,
             token,
           });
           //You typed something in wrong
@@ -136,7 +142,7 @@ router.post("/login", (req, res) => {
 });
 //User Creation/Login Ends here
 
-//All Admins and their chains on this GET
+//All Students and their chains on this GET
 router.get("/users", restricted, (req, res) => {
   model
     .getAll()
@@ -158,7 +164,7 @@ router.get("/profile", restricted, (req, res) => {
         console.log("findProfile", data);
         res.status(200).json({
           message:
-            "Welcome to your profile, below you will find information relevant to you. Navigate to /country, or /lists for more information",
+            "Welcome to your profile, below you will find information relevant to you. Navigate to /country",
           data: data,
         });
       })
@@ -172,7 +178,7 @@ router.get("/profile", restricted, (req, res) => {
 });
 
 router.get("/profile/country", restricted, (req, res) => {
-  //grabs country property from token and filters admin database
+  //grabs country property from token and filters student database
   const country = req.jwt.country;
   if (country) {
     model
@@ -189,38 +195,6 @@ router.get("/profile/country", restricted, (req, res) => {
     res.status(404).json({ message: "country not found" });
   }
 });
-
-router.get("/profile/lists", restricted, (req, res) => {
-  //grabs subject property from token and filters admin database for specific lists
-  const id = req.jwt.subject;
-  if (id) {
-    model
-      .findListByProfile(id)
-      .then((newData) => {
-        console.log("profile lists", newData);
-        res.status(200).json(newData);
-      })
-      .catch((error) => {
-        console.log("profile lists error", error);
-        res.status(500).json(error);
-      });
-  } else {
-    res.status(404).json({ message: "id not found" });
-  }
-});
-
-//To-Do Lists Start Here
-router.get("/lists", restricted, (req, res) => {
-  model
-    .getToDoLists()
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((error) => {
-      res.status(500).json(error);
-    });
-});
-//To-Do Lists End Here
 
 //Auth Token, good for 24 hours
 function generateToken(guy) {

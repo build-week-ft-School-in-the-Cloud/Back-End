@@ -22,7 +22,7 @@ exports.seed = function (knex) {
           completed: false,
         },
         {
-          listId: 2,
+          listId: 3,
           itemId: 1,
           item: "Spell names correctly",
           completed: false,
