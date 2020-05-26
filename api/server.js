@@ -1,11 +1,12 @@
 const express = require("express");
 const cors = require("cors");
-// const restricted = require("../auth/restricted-middleware");
+const restricted = require("../auth/restricted-middleware");
 
 const server = express();
 
 //Router
 const adminRoutes = require("../admin/adminRouter");
+const adminRoutes2 = require("../admin/adminProfile");
 const volunteerRoutes = require("../volunteer/volunteerRouter");
 const studentRoutes = require("../students/studentRouter");
 
@@ -15,6 +16,7 @@ server.use(cors());
 
 //Endpoints
 server.use("/api/admin", adminRoutes);
+server.use("/api/admin/profile", restricted, adminRoutes2);
 server.use("/api/volunteer", volunteerRoutes);
 server.use("/api/student", studentRoutes);
 

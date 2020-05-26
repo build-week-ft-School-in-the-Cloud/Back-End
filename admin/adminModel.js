@@ -7,8 +7,15 @@ module.exports = {
   // findAllByUsername,
   findProfile,
   register,
+  registerList,
   getToDoLists,
   findListByProfile,
+  findListInfoinMoreDetail,
+  itemDetail,
+  updateList,
+  updateItem,
+  removeList,
+  removeItem,
 };
 
 //Returns everything from an admin perspective, which is in charge of which volunteer and which students are under them
@@ -21,13 +28,17 @@ function getAll() {
       "a.username as Admin Username",
       "a.forename as Admin First Name",
       "a.surname as Admin Last Name",
+      "a.country as Admin Country",
       "v.username as Assigned Volunteer Username",
       "v.forename as Assigned Volunteer First Name",
       "v.surname as Assigned Volunteer Last Name",
+      "v.availible_times as Assigned Volunteer Available Times",
+      "v.country as Assigned Volunteer Country",
       "s.username as Assigned Student Username",
       "s.forename as Assigned Student First Name",
       "s.surname as Assigned Student Last Name",
-      "s.country as Shared Country"
+      "s.availible_times as Assigned Student Available Times",
+      "s.country as Assigned Student Country"
     )
     .orderBy("a.id");
 }
@@ -44,9 +55,11 @@ function findByCountry(country) {
       "v.username as Assigned Volunteer Username",
       "v.forename as Assigned Volunteer First Name",
       "v.surname as Assigned Volunteer Last Name",
+      "v.availible_times as Assigned Volunteer Available Times",
       "s.username as Assigned Student Username",
       "s.forename as Assigned Student First Name",
-      "s.surname as Assigned Student Last Name"
+      "s.surname as Assigned Student Last Name",
+      "s.availible_times as Assigned Student Available Times"
     )
     .where("a.country", country)
     .orderBy("v.id");
@@ -72,10 +85,16 @@ function findProfile(id) {
     .leftJoin("lists as l", "a.id", "l.adminId")
     .leftJoin("items as i", "l.id", "i.listId")
     .select(
+      "a.username as Username",
+      "a.forename as First Name",
+      "a.surname as Last Name",
+      "a.country as Country",
+
+      "l.toDoListName as List Name",
       "v.username as Volunteer Username",
       "v.forename as Volunteer First Name",
       "v.surname as Volunteer Last Name",
-      "l.toDoListName as List Name",
+      "v.availible_times as Volunteer Available Times",
       "i.item as Item Name",
       "i.completed as Item Completion"
     )
@@ -93,12 +112,21 @@ function register(person) {
     });
 }
 
+function registerList(list) {
+  return db("lists as l")
+    .insert(list, "*")
+    .then(([newList]) => {
+      return newList;
+    });
+}
+
 function getToDoLists() {
   return db("lists as l")
     .leftJoin("items as i", "l.id", "i.listId")
     .leftJoin("administrator as a", "l.adminId", "a.id")
     .leftJoin("volunteer as v", "l.volunteerId", "v.id")
     .select(
+      "l.id as List Number",
       "a.username as Assigned by Admin",
       // "a.forename as Admin First Name",
       // "a.surname as Admin Last Name",
@@ -109,22 +137,70 @@ function getToDoLists() {
       "i.item as Item Name",
       "i.completed as Item Completion"
     )
-    .orderBy("a.id");
+    .orderBy("l.id");
 }
 
 function findListByProfile(id) {
   return db("lists as l")
-    .leftJoin("items as i", "l.id", "i.listId")
     .leftJoin("administrator as a", "l.adminId", "a.id")
     .leftJoin("volunteer as v", "l.volunteerId", "v.id")
     .select(
+      "l.id As list",
+      "a.username as admin",
       "l.toDoListName as List Name",
       "v.username as Assigned to Volunteer",
       "v.forename as Assigned Volunteer First Name",
-      "v.surname as Assigned Volunteer Last Name",
-      "i.item as Item Name",
-      "i.completed as Item Completion"
+      "v.surname as Assigned Volunteer Last Name"
     )
     .where("a.id", id)
-    .orderBy("v.id");
+    .orderBy("l.id");
+}
+
+function findListInfoinMoreDetail(id) {
+  return db("lists as l")
+    .leftJoin("volunteer as v", "l.volunteerId", "v.id")
+    .leftJoin("items as i", "l.id", "i.listId")
+    .leftJoin("administrator as a", "l.adminId", "a.id")
+    .select(
+      "l.id as list",
+      "a.username as admin",
+      "v.username as Assigned to Volunteer",
+      "i.itemId As Item Number",
+      "i.item As Item Name",
+      "i.completed As Completion Status"
+    )
+    .where("l.id", id)
+    .orderBy("l.id");
+}
+
+function itemDetail(id, item) {
+  return db("items as i")
+    .join("lists as l", "i.listId", "l.id")
+    .select(
+      "i.listId as list",
+      "i.itemId as item",
+      "i.item As Item Name",
+      "i.completed As Completion Status"
+    )
+    .where("i.listId", id)
+    .where("i.itemId", item)
+    .orderBy("i.id");
+}
+
+function updateList(changes, id) {
+  return db("lists as l").where("l.id", id).update(changes);
+}
+
+function updateItem(changes, id, item) {
+  return db("items as i")
+    .where("i.listId", id)
+    .where("i.itemId", item)
+    .update(changes);
+}
+
+function removeList(id) {
+  return db("lists as l").where("l.id", id).del();
+}
+function removeItem(id, item) {
+  return db("items as i").where("i.listId", id).where("i.itemId", item).del();
 }

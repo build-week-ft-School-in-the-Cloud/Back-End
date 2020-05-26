@@ -1,8 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const secret = require("../config/secret");
 const restricted = require("../auth/restricted-middleware");
+const genTok = require("../auth/generateToken");
 
 const model = require("./volunteerModel");
 
@@ -121,7 +120,7 @@ router.post("/login", (req, res) => {
       .then(([employee]) => {
         //compares given password to stored hashed password
         if (employee && bcrypt.compareSync(password, employee.password)) {
-          const token = generateToken(employee);
+          const token = genTok.generateToken(employee);
 
           res.status(200).json({
             message: `Welcome, ${employee.username}! Login Successful! Navigate to /users or /profile`,
@@ -214,19 +213,5 @@ router.get("/profile/lists", restricted, (req, res) => {
     res.status(404).json({ message: "id not found" });
   }
 });
-
-//Auth Token, good for 24 hours
-function generateToken(guy) {
-  const payload = {
-    subject: guy.id,
-    username: guy.username,
-    name: guy.forename + " " + guy.surname,
-    country: guy.country,
-  };
-  const options = {
-    expiresIn: "1d",
-  };
-  return jwt.sign(payload, secret.jwtSecret, options);
-}
 
 module.exports = router;

@@ -1,8 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const secret = require("../config/secret");
 const restricted = require("../auth/restricted-middleware");
+const genTok = require("../auth/generateToken");
 
 const model = require("./adminModel");
 
@@ -115,7 +114,7 @@ router.post("/login", (req, res) => {
       .then(([employee]) => {
         //compares given password to stored hashed password
         if (employee && bcrypt.compareSync(password, employee.password)) {
-          const token = generateToken(employee);
+          const token = genTok.generateToken(employee);
 
           res.status(200).json({
             message: `Welcome, ${employee.username}! Login Successful! Navigate to /users or /profile`,
@@ -148,68 +147,6 @@ router.get("/users", restricted, (req, res) => {
     });
 });
 
-//Profile Specific Endpoints
-router.get("/profile", restricted, (req, res) => {
-  const id = req.jwt.subject;
-  if (id) {
-    model
-      .findProfile(id)
-      .then((data) => {
-        console.log("findProfile", data);
-        res.status(200).json({
-          message:
-            "Welcome to your profile, below you will find information relevant to you. Navigate to /country, or /lists for more information",
-          data: data,
-        });
-      })
-      .catch((error) => {
-        console.log("findProfile error", error);
-        res.status(500).json(error);
-      });
-  } else {
-    res.status(404).json({ message: "id not found" });
-  }
-});
-
-router.get("/profile/country", restricted, (req, res) => {
-  //grabs country property from token and filters admin database
-  const country = req.jwt.country;
-  if (country) {
-    model
-      .findByCountry(country)
-      .then((newData) => {
-        console.log("country", newData);
-        res.status(200).json(newData);
-      })
-      .catch((error) => {
-        console.log("country error", error);
-        res.status(500).json(error);
-      });
-  } else {
-    res.status(404).json({ message: "country not found" });
-  }
-});
-
-router.get("/profile/lists", restricted, (req, res) => {
-  //grabs subject property from token and filters admin database for specific lists
-  const id = req.jwt.subject;
-  if (id) {
-    model
-      .findListByProfile(id)
-      .then((newData) => {
-        console.log("profile lists", newData);
-        res.status(200).json(newData);
-      })
-      .catch((error) => {
-        console.log("profile lists error", error);
-        res.status(500).json(error);
-      });
-  } else {
-    res.status(404).json({ message: "id not found" });
-  }
-});
-
-//To-Do Lists Start Here
 router.get("/lists", restricted, (req, res) => {
   model
     .getToDoLists()
@@ -220,20 +157,4 @@ router.get("/lists", restricted, (req, res) => {
       res.status(500).json(error);
     });
 });
-//To-Do Lists End Here
-
-//Auth Token, good for 24 hours
-function generateToken(guy) {
-  const payload = {
-    subject: guy.id,
-    username: guy.username,
-    name: guy.forename + " " + guy.surname,
-    country: guy.country,
-  };
-  const options = {
-    expiresIn: "1d",
-  };
-  return jwt.sign(payload, secret.jwtSecret, options);
-}
-
 module.exports = router;
