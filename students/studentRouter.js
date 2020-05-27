@@ -195,4 +195,23 @@ router.get("/profile/country", restricted, (req, res) => {
   }
 });
 
+router.put("/profile/edit", restricted, (req, res) => {
+  const id = req.jwt.subject;
+  const body = req.body;
+  if (id) {
+    model
+      .update(body, id)
+      .then((newBody) => {
+        console.log("new name", body);
+        res.status(201).json("Edit successful", body);
+      })
+      .catch((error) => {
+        console.log("error message: \n", error);
+        res.status(500).json({ error: error });
+      });
+  } else {
+    res.status(404).json({ message: "user not found" });
+  }
+});
+
 module.exports = router;

@@ -6,6 +6,7 @@ module.exports = {
   findByUsername,
   findProfile,
   register,
+  update,
 };
 
 //Returns everything from a student perspective, which volunteers are teaching them
@@ -44,11 +45,13 @@ function findByCountry(country) {
         "v.username as TeacherUsername",
         "v.forename as TeacherFirstName",
         "v.surname as TeacherLastName",
+        "v.country as TeacherCountry",
         //student info
         "s.id as StudentID",
         "s.username as StudentUsername",
         "s.forename as StudentFirstName",
-        "s.surname as  StudentLastName"
+        "s.surname as  StudentLastName",
+        "s.country as StudentCountry"
       )
       //filtered and sorted by student info
       .where("s.country", country)
@@ -90,4 +93,12 @@ function register(person) {
     .then(([newUser]) => {
       return newUser;
     });
+}
+
+//Edit Student Information
+function update(changes, id) {
+  return db("student as s")
+    .select("s.forename as FirstName", "s.surname as LastName")
+    .where("s.id", id)
+    .update(changes);
 }
